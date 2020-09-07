@@ -4,32 +4,33 @@ import {
   CSSResult,
   customElement,
   html,
+  internalProperty,
   LitElement,
   property,
   TemplateResult,
 } from "lit-element";
+import { assert, number, object, optional, string } from "superstruct";
 import { fireEvent } from "../../../../common/dom/fire_event";
-import "../../../../components/ha-switch";
+import { computeRTLDirection } from "../../../../common/util/compute_rtl";
 import "../../../../components/ha-formfield";
+import "../../../../components/ha-switch";
 import { HomeAssistant } from "../../../../types";
 import { GaugeCardConfig, SeverityConfig } from "../../cards/types";
-import { struct } from "../../common/structs/struct";
 import "../../components/hui-entity-editor";
 import "../../components/hui-theme-select-editor";
 import { LovelaceCardEditor } from "../../types";
 import { EditorTarget, EntitiesEditorEvent } from "../types";
 import { configElementStyle } from "./config-elements-style";
-import { computeRTLDirection } from "../../../../common/util/compute_rtl";
 
-const cardConfigStruct = struct({
-  type: "string",
-  name: "string?",
-  entity: "string?",
-  unit: "string?",
-  min: "number?",
-  max: "number?",
-  severity: "object?",
-  theme: "string?",
+const cardConfigStruct = object({
+  type: string(),
+  name: optional(string()),
+  entity: optional(string()),
+  unit: optional(string()),
+  min: optional(number()),
+  max: optional(number()),
+  severity: optional(object()),
+  theme: optional(string()),
 });
 
 const includeDomains = ["sensor"];
@@ -37,12 +38,12 @@ const includeDomains = ["sensor"];
 @customElement("hui-gauge-card-editor")
 export class HuiGaugeCardEditor extends LitElement
   implements LovelaceCardEditor {
-  @property() public hass?: HomeAssistant;
+  @property({ attribute: false }) public hass?: HomeAssistant;
 
-  @property() private _config?: GaugeCardConfig;
+  @internalProperty() private _config?: GaugeCardConfig;
 
   public setConfig(config: GaugeCardConfig): void {
-    config = cardConfigStruct(config);
+    assert(config, cardConfigStruct);
     this._config = config;
   }
 
@@ -221,12 +222,16 @@ export class HuiGaugeCardEditor extends LitElement
     }
 
     if ((ev.target as EditorTarget).checked) {
-      this._config.severity = {
-        green: 0,
-        yellow: 0,
-        red: 0,
+      this._config = {
+        ...this._config,
+        severity: {
+          green: 0,
+          yellow: 0,
+          red: 0,
+        },
       };
     } else {
+      this._config = { ...this._config };
       delete this._config.severity;
     }
     fireEvent(this, "config-changed", { config: this._config });
@@ -259,6 +264,7 @@ export class HuiGaugeCardEditor extends LitElement
         target.value === "" ||
         (target.type === "number" && isNaN(Number(target.value)))
       ) {
+        this._config = { ...this._config };
         delete this._config[target.configValue!];
       } else {
         let value: any = target.value;

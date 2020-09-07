@@ -9,7 +9,7 @@ import { fireEvent, HASSDomEvent } from "../../common/dom/fire_event";
 import "../../components/ha-switch";
 import type { HaSwitch } from "../../components/ha-switch";
 import type { HomeAssistant } from "../../types";
-import "./ha-settings-row";
+import "../../components/ha-settings-row";
 
 declare global {
   // for fire event
@@ -26,7 +26,7 @@ declare global {
 
 @customElement("ha-set-suspend-row")
 class HaSetSuspendRow extends LitElement {
-  @property() public hass!: HomeAssistant;
+  @property({ attribute: false }) public hass!: HomeAssistant;
 
   @property() public narrow!: boolean;
 

@@ -7,6 +7,7 @@ import {
   html,
   LitElement,
   property,
+  internalProperty,
   TemplateResult,
 } from "lit-element";
 import { fireEvent } from "../../../../common/dom/fire_event";
@@ -15,22 +16,22 @@ import "../../../../components/entity/ha-entity-picker";
 import "../../../../components/ha-icon-input";
 import { HomeAssistant } from "../../../../types";
 import { SensorCardConfig } from "../../cards/types";
-import { struct } from "../../common/structs/struct";
 import "../../components/hui-theme-select-editor";
 import { LovelaceCardEditor } from "../../types";
 import { EditorTarget, EntitiesEditorEvent } from "../types";
 import { configElementStyle } from "./config-elements-style";
+import { string, assert, object, optional, number } from "superstruct";
 
-const cardConfigStruct = struct({
-  type: "string",
-  entity: "string?",
-  name: "string?",
-  icon: "string?",
-  graph: "string?",
-  unit: "string?",
-  detail: "number?",
-  theme: "string?",
-  hours_to_show: "number?",
+const cardConfigStruct = object({
+  type: string(),
+  entity: optional(string()),
+  name: optional(string()),
+  icon: optional(string()),
+  graph: optional(string()),
+  unit: optional(string()),
+  detail: optional(number()),
+  theme: optional(string()),
+  hours_to_show: optional(number()),
 });
 
 const includeDomains = ["sensor"];
@@ -38,12 +39,12 @@ const includeDomains = ["sensor"];
 @customElement("hui-sensor-card-editor")
 export class HuiSensorCardEditor extends LitElement
   implements LovelaceCardEditor {
-  @property() public hass?: HomeAssistant;
+  @property({ attribute: false }) public hass?: HomeAssistant;
 
-  @property() private _config?: SensorCardConfig;
+  @internalProperty() private _config?: SensorCardConfig;
 
   public setConfig(config: SensorCardConfig): void {
-    config = cardConfigStruct(config);
+    assert(config, cardConfigStruct);
     this._config = config;
   }
 
@@ -204,6 +205,7 @@ export class HuiSensorCardEditor extends LitElement
         target.value === "" ||
         (target.type === "number" && isNaN(Number(target.value)))
       ) {
+        this._config = { ...this._config };
         delete this._config[target.configValue!];
       } else {
         let value: any = target.value;

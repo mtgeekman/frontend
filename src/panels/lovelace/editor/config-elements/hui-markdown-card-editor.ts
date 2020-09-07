@@ -5,33 +5,34 @@ import {
   html,
   LitElement,
   property,
+  internalProperty,
   TemplateResult,
 } from "lit-element";
 import { fireEvent } from "../../../../common/dom/fire_event";
 import { HomeAssistant } from "../../../../types";
 import { MarkdownCardConfig } from "../../cards/types";
-import { struct } from "../../common/structs/struct";
 import "../../components/hui-theme-select-editor";
 import { LovelaceCardEditor } from "../../types";
 import { EditorTarget, EntitiesEditorEvent } from "../types";
 import { configElementStyle } from "./config-elements-style";
+import { string, assert, object, optional } from "superstruct";
 
-const cardConfigStruct = struct({
-  type: "string",
-  title: "string?",
-  content: "string",
-  theme: "string?",
+const cardConfigStruct = object({
+  type: string(),
+  title: optional(string()),
+  content: string(),
+  theme: optional(string()),
 });
 
 @customElement("hui-markdown-card-editor")
 export class HuiMarkdownCardEditor extends LitElement
   implements LovelaceCardEditor {
-  @property() public hass?: HomeAssistant;
+  @property({ attribute: false }) public hass?: HomeAssistant;
 
-  @property() private _config?: MarkdownCardConfig;
+  @internalProperty() private _config?: MarkdownCardConfig;
 
   public setConfig(config: MarkdownCardConfig): void {
-    config = cardConfigStruct(config);
+    assert(config, cardConfigStruct);
     this._config = config;
   }
 
@@ -73,6 +74,7 @@ export class HuiMarkdownCardEditor extends LitElement
           )})"
           .value="${this._content}"
           .configValue="${"content"}"
+          @keydown=${this._ignoreKeydown}
           @value-changed="${this._valueChanged}"
           autocapitalize="none"
           autocomplete="off"
@@ -88,6 +90,10 @@ export class HuiMarkdownCardEditor extends LitElement
     `;
   }
 
+  private _ignoreKeydown(ev: KeyboardEvent) {
+    ev.stopPropagation();
+  }
+
   private _valueChanged(ev: EntitiesEditorEvent): void {
     if (!this._config || !this.hass) {
       return;
@@ -99,6 +105,7 @@ export class HuiMarkdownCardEditor extends LitElement
     }
     if (target.configValue) {
       if (target.value === "" && target.configValue !== "content") {
+        this._config = { ...this._config };
         delete this._config[target.configValue!];
       } else {
         this._config = {

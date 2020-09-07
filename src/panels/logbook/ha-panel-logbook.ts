@@ -1,4 +1,3 @@
-import "@polymer/app-layout/app-header-layout/app-header-layout";
 import "@polymer/app-layout/app-header/app-header";
 import "@polymer/app-layout/app-toolbar/app-toolbar";
 import "../../components/ha-icon-button";
@@ -6,10 +5,12 @@ import "../../components/ha-circular-progress";
 import { computeRTL } from "../../common/util/compute_rtl";
 import "../../components/entity/ha-entity-picker";
 import "../../components/ha-menu-button";
+import "../../layouts/ha-app-layout";
 import "./ha-logbook";
 import {
   LitElement,
   property,
+  internalProperty,
   customElement,
   html,
   css,
@@ -49,7 +50,7 @@ export class HaPanelLogbook extends LitElement {
 
   @property({ reflect: true, type: Boolean }) rtl = false;
 
-  @property() private _ranges?: DateRangePickerRanges;
+  @internalProperty() private _ranges?: DateRangePickerRanges;
 
   private _fetchUserDone?: Promise<unknown>;
 
@@ -73,7 +74,7 @@ export class HaPanelLogbook extends LitElement {
 
   protected render() {
     return html`
-      <app-header-layout>
+      <ha-app-layout>
         <app-header slot="header" fixed>
           <app-toolbar>
             <ha-menu-button
@@ -125,7 +126,7 @@ export class HaPanelLogbook extends LitElement {
               .entries=${this._entries}
               .userIdToName=${this._userIdToName}
             ></ha-logbook>`}
-      </app-header-layout>
+      </ha-app-layout>
     `;
   }
 

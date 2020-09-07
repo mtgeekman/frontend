@@ -87,11 +87,21 @@ export interface Theme {
   "primary-color": string;
   "text-primary-color": string;
   "accent-color": string;
+  [key: string]: string;
 }
 
 export interface Themes {
   default_theme: string;
+  default_dark_theme: string | null;
   themes: { [key: string]: Theme };
+  darkMode: boolean;
+}
+
+export interface ThemeSettings {
+  theme: string;
+  dark?: boolean;
+  primaryColor?: string;
+  accentColor?: string;
 }
 
 export interface PanelInfo<T = {} | null> {
@@ -108,8 +118,8 @@ export interface Panels {
 
 export interface Calendar {
   entity_id: string;
-  name: string;
-  backgroundColor: string;
+  name?: string;
+  backgroundColor?: string;
 }
 
 export interface SelectedCalendar {
@@ -134,9 +144,15 @@ export interface CalendarViewChanged {
   view: string;
 }
 
+export type FullCalendarView =
+  | "dayGridMonth"
+  | "dayGridWeek"
+  | "dayGridDay"
+  | "listWeek";
+
 export interface ToggleButton {
-  label?: string;
-  icon: string;
+  label: string;
+  iconPath: string;
   value: string;
 }
 
@@ -177,7 +193,7 @@ export interface Resources {
 
 export interface Context {
   id: string;
-  parrent_id?: string;
+  parent_id?: string;
   user_id?: string;
 }
 
@@ -193,7 +209,7 @@ export interface HomeAssistant {
   services: HassServices;
   config: HassConfig;
   themes: Themes;
-  selectedTheme?: string | null;
+  selectedTheme?: ThemeSettings | null;
   panels: Panels;
   panelUrl: string;
 
@@ -244,6 +260,10 @@ export type LightEntity = HassEntityBase & {
     friendly_name: string;
     brightness: number;
     hs_color: number[];
+    color_temp: number;
+    white_value: number;
+    effect?: string;
+    effect_list: string[] | null;
   };
 };
 
@@ -273,6 +293,12 @@ export type MediaEntity = HassEntityBase & {
     media_title: string;
     icon?: string;
     entity_picture_local?: string;
+    is_volume_muted?: boolean;
+    volume_level?: number;
+    source?: string;
+    source_list?: string[];
+    sound_mode?: string;
+    sound_mode_list?: string[];
   };
   state:
     | "playing"

@@ -2,6 +2,7 @@ import {
   html,
   LitElement,
   property,
+  internalProperty,
   PropertyValues,
   TemplateResult,
   CSSResult,
@@ -22,11 +23,11 @@ import { computeCardSize } from "../common/compute-card-size";
 import { processConfigEntities } from "../common/process-config-entities";
 import { createBadgeElement } from "../create-element/create-badge-element";
 import { createCardElement } from "../create-element/create-card-element";
-import { showEditCardDialog } from "../editor/card-editor/show-edit-card-dialog";
 import { Lovelace, LovelaceBadge, LovelaceCard } from "../types";
 import "../../../components/ha-svg-icon";
 import { mdiPlus } from "@mdi/js";
 import { nextRender } from "../../../common/util/render-status";
+import { showCreateCardDialog } from "../editor/card-editor/show-create-card-dialog";
 
 let editCodeLoaded = false;
 
@@ -49,17 +50,17 @@ const getColumnIndex = (columnSizes: number[], size: number) => {
 };
 
 export class HUIView extends LitElement {
-  @property() public hass?: HomeAssistant;
+  @property({ attribute: false }) public hass?: HomeAssistant;
 
-  @property() public lovelace?: Lovelace;
+  @property({ attribute: false }) public lovelace?: Lovelace;
 
   @property({ type: Number }) public columns?: number;
 
   @property({ type: Number }) public index?: number;
 
-  @property() private _cards: Array<LovelaceCard | HuiErrorCard> = [];
+  @internalProperty() private _cards: Array<LovelaceCard | HuiErrorCard> = [];
 
-  @property() private _badges: LovelaceBadge[] = [];
+  @internalProperty() private _badges: LovelaceBadge[] = [];
 
   private _createColumnsIteration = 0;
 
@@ -185,7 +186,7 @@ export class HUIView extends LitElement {
   }
 
   private _addCard(): void {
-    showEditCardDialog(this, {
+    showCreateCardDialog(this, {
       lovelaceConfig: this.lovelace!.config,
       saveConfig: this.lovelace!.saveConfig,
       path: [this.index!],
@@ -349,7 +350,7 @@ export class HUIView extends LitElement {
       :host {
         display: block;
         box-sizing: border-box;
-        padding: 4px 4px 0;
+        padding: 4px 4px env(safe-area-inset-bottom);
         transform: translateZ(0);
         position: relative;
         color: var(--primary-text-color);
@@ -382,27 +383,15 @@ export class HUIView extends LitElement {
       mwc-fab {
         position: sticky;
         float: right;
-        bottom: 16px;
-        right: 16px;
+        right: calc(16px + env(safe-area-inset-right));
+        bottom: calc(16px + env(safe-area-inset-bottom));
         z-index: 1;
       }
 
       mwc-fab.rtl {
         float: left;
         right: auto;
-        left: 16px;
-      }
-
-      @media (max-width: 500px) {
-        :host {
-          padding-left: 0;
-          padding-right: 0;
-        }
-
-        .column > * {
-          margin-left: 0;
-          margin-right: 0;
-        }
+        left: calc(16px + env(safe-area-inset-left));
       }
 
       @media (max-width: 599px) {

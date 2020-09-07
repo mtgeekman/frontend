@@ -1,15 +1,15 @@
 import "@polymer/paper-input/paper-input";
+import "@polymer/paper-input/paper-textarea";
 import { customElement, html, LitElement, property } from "lit-element";
 import { fireEvent } from "../../../../../common/dom/fire_event";
 import "../../../../../components/entity/ha-entity-picker";
-import "@polymer/paper-input/paper-textarea";
 import { ForDict, NumericStateTrigger } from "../../../../../data/automation";
 import { HomeAssistant } from "../../../../../types";
 import { handleChangeEvent } from "../ha-automation-trigger-row";
 
 @customElement("ha-automation-trigger-numeric_state")
 export default class HaNumericStateTrigger extends LitElement {
-  @property() public hass!: HomeAssistant;
+  @property({ attribute: false }) public hass!: HomeAssistant;
 
   @property() public trigger!: NumericStateTrigger;
 
@@ -19,7 +19,7 @@ export default class HaNumericStateTrigger extends LitElement {
     };
   }
 
-  public render() {
+  protected render() {
     const { value_template, entity_id, below, above } = this.trigger;
     let trgFor = this.trigger.for;
 

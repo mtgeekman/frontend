@@ -25,7 +25,7 @@ export interface ClusterRowData extends Cluster {
 
 @customElement("zha-clusters-data-table")
 export class ZHAClustersDataTable extends LitElement {
-  @property() public hass!: HomeAssistant;
+  @property({ attribute: false }) public hass!: HomeAssistant;
 
   @property() public narrow = false;
 
@@ -93,6 +93,8 @@ export class ZHAClustersDataTable extends LitElement {
         selectable
         auto-height
         .dir=${computeRTLDirection(this.hass)}
+        .searchLabel=${this.hass.localize("ui.components.data-table.search")}
+        .noDataText=${this.hass.localize("ui.components.data-table.no-data")}
       ></ha-data-table>
     `;
   }

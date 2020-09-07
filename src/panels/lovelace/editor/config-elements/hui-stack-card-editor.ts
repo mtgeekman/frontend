@@ -8,6 +8,7 @@ import {
   html,
   LitElement,
   property,
+  internalProperty,
   query,
   TemplateResult,
 } from "lit-element";
@@ -15,7 +16,6 @@ import { fireEvent, HASSDomEvent } from "../../../../common/dom/fire_event";
 import { LovelaceConfig } from "../../../../data/lovelace";
 import { HomeAssistant } from "../../../../types";
 import { StackCardConfig } from "../../cards/types";
-import { struct } from "../../common/structs/struct";
 import { LovelaceCardEditor } from "../../types";
 import {
   ConfigChangedEvent,
@@ -23,32 +23,34 @@ import {
 } from "../card-editor/hui-card-editor";
 import "../card-editor/hui-card-picker";
 import { GUIModeChangedEvent } from "../types";
+import { assert, object, string, array, any, optional } from "superstruct";
 
-const cardConfigStruct = struct({
-  type: "string",
-  cards: ["any"],
-  title: "string?",
+const cardConfigStruct = object({
+  type: string(),
+  cards: array(any()),
+  title: optional(string()),
 });
 
 @customElement("hui-stack-card-editor")
 export class HuiStackCardEditor extends LitElement
   implements LovelaceCardEditor {
-  @property() public hass?: HomeAssistant;
+  @property({ attribute: false }) public hass?: HomeAssistant;
 
-  @property() public lovelace?: LovelaceConfig;
+  @property({ attribute: false }) public lovelace?: LovelaceConfig;
 
-  @property() private _config?: StackCardConfig;
+  @internalProperty() private _config?: StackCardConfig;
 
-  @property() private _selectedCard = 0;
+  @internalProperty() private _selectedCard = 0;
 
-  @property() private _GUImode = true;
+  @internalProperty() private _GUImode = true;
 
-  @property() private _guiModeAvailable? = true;
+  @internalProperty() private _guiModeAvailable? = true;
 
   @query("hui-card-editor") private _cardEditorEl?: HuiCardEditor;
 
-  public setConfig(config: StackCardConfig): void {
-    this._config = cardConfigStruct(config);
+  public setConfig(config: Readonly<StackCardConfig>): void {
+    assert(config, cardConfigStruct);
+    this._config = config;
   }
 
   public refreshYamlEditor(focus) {
@@ -161,7 +163,9 @@ export class HuiStackCardEditor extends LitElement
     if (!this._config) {
       return;
     }
-    this._config.cards[this._selectedCard] = ev.detail.config;
+    const cards = [...this._config.cards];
+    cards[this._selectedCard] = ev.detail.config;
+    this._config = { ...this._config, cards };
     this._guiModeAvailable = ev.detail.guiModeAvailable;
     fireEvent(this, "config-changed", { config: this._config });
   }
@@ -172,7 +176,8 @@ export class HuiStackCardEditor extends LitElement
       return;
     }
     const config = ev.detail.config;
-    this._config.cards.push(config);
+    const cards = [...this._config.cards, config];
+    this._config = { ...this._config, cards };
     fireEvent(this, "config-changed", { config: this._config });
   }
 
@@ -180,7 +185,9 @@ export class HuiStackCardEditor extends LitElement
     if (!this._config) {
       return;
     }
-    this._config.cards.splice(this._selectedCard, 1);
+    const cards = [...this._config.cards];
+    cards.splice(this._selectedCard, 1);
+    this._config = { ...this._config, cards };
     this._selectedCard = Math.max(0, this._selectedCard - 1);
     fireEvent(this, "config-changed", { config: this._config });
   }
@@ -191,8 +198,13 @@ export class HuiStackCardEditor extends LitElement
     }
     const source = this._selectedCard;
     const target = ev.target.id === "move-before" ? source - 1 : source + 1;
-    const card = this._config.cards.splice(this._selectedCard, 1)[0];
-    this._config.cards.splice(target, 0, card);
+    const cards = [...this._config.cards];
+    const card = cards.splice(this._selectedCard, 1)[0];
+    cards.splice(target, 0, card);
+    this._config = {
+      ...this._config,
+      cards,
+    };
     this._selectedCard = target;
     fireEvent(this, "config-changed", { config: this._config });
   }

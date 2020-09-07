@@ -1,24 +1,26 @@
-import "@material/mwc-tab-bar";
-import "@material/mwc-tab";
 import "@material/mwc-icon-button";
+import "@material/mwc-tab";
+import "@material/mwc-tab-bar";
+import { mdiClose, mdiTune } from "@mdi/js";
 import { HassEntity } from "home-assistant-js-websocket";
 import {
   css,
   CSSResult,
   customElement,
   html,
+  internalProperty,
   LitElement,
   property,
   TemplateResult,
 } from "lit-element";
 import { cache } from "lit-html/directives/cache";
-import { fireEvent } from "../../../common/dom/fire_event";
 import { dynamicElement } from "../../../common/dom/dynamic-element-directive";
+import { fireEvent } from "../../../common/dom/fire_event";
 import { computeStateName } from "../../../common/entity/compute_state_name";
 import "../../../components/ha-dialog";
 import "../../../components/ha-header-bar";
-import "../../../components/ha-svg-icon";
 import "../../../components/ha-related-items";
+import "../../../components/ha-svg-icon";
 import {
   EntityRegistryEntry,
   ExtEntityRegistryEntry,
@@ -29,7 +31,6 @@ import type { HomeAssistant } from "../../../types";
 import { PLATFORMS_WITH_SETTINGS_TAB } from "./const";
 import "./entity-registry-settings";
 import type { EntityRegistryDetailDialogParams } from "./show-dialog-entity-editor";
-import { mdiClose, mdiTune } from "@mdi/js";
 
 interface Tabs {
   [key: string]: Tab;
@@ -42,20 +43,20 @@ interface Tab {
 
 @customElement("dialog-entity-editor")
 export class DialogEntityEditor extends LitElement {
-  @property() public hass!: HomeAssistant;
+  @property({ attribute: false }) public hass!: HomeAssistant;
 
-  @property() private _params?: EntityRegistryDetailDialogParams;
+  @internalProperty() private _params?: EntityRegistryDetailDialogParams;
 
-  @property() private _entry?:
+  @internalProperty() private _entry?:
     | EntityRegistryEntry
     | ExtEntityRegistryEntry
     | null;
 
-  @property() private _curTab = "tab-settings";
+  @internalProperty() private _curTab = "tab-settings";
 
-  @property() private _extraTabs: Tabs = {};
+  @internalProperty() private _extraTabs: Tabs = {};
 
-  @property() private _settingsElementTag?: string;
+  @internalProperty() private _settingsElementTag?: string;
 
   private _curTabIndex = 0;
 
@@ -234,7 +235,7 @@ export class DialogEntityEditor extends LitElement {
       css`
         ha-header-bar {
           --mdc-theme-on-primary: var(--primary-text-color);
-          --mdc-theme-primary: var(--card-background-color);
+          --mdc-theme-primary: var(--mdc-theme-surface);
           flex-shrink: 0;
         }
 
@@ -244,12 +245,14 @@ export class DialogEntityEditor extends LitElement {
         }
 
         ha-dialog {
+          --dialog-content-position: static;
           --dialog-content-padding: 0;
+          --dialog-z-index: 6;
         }
 
         @media all and (min-width: 451px) and (min-height: 501px) {
           .wrapper {
-            width: 400px;
+            min-width: 400px;
           }
         }
 

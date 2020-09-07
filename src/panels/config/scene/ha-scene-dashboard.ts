@@ -1,4 +1,5 @@
-import "../../../components/ha-icon-button";
+import "@material/mwc-fab";
+import { mdiPlus } from "@mdi/js";
 import "@polymer/paper-tooltip/paper-tooltip";
 import {
   css,
@@ -13,9 +14,11 @@ import { ifDefined } from "lit-html/directives/if-defined";
 import memoizeOne from "memoize-one";
 import { fireEvent } from "../../../common/dom/fire_event";
 import { computeStateName } from "../../../common/entity/compute_state_name";
-import { computeRTL } from "../../../common/util/compute_rtl";
+import { stateIcon } from "../../../common/entity/state_icon";
 import { DataTableColumnContainer } from "../../../components/data-table/ha-data-table";
-import "@material/mwc-fab";
+import "../../../components/ha-icon";
+import "../../../components/ha-icon-button";
+import "../../../components/ha-svg-icon";
 import { forwardHaptic } from "../../../data/haptics";
 import { activateScene, SceneEntity } from "../../../data/scene";
 import { showAlertDialog } from "../../../dialogs/generic/show-dialog-box";
@@ -24,12 +27,10 @@ import { haStyle } from "../../../resources/styles";
 import { HomeAssistant, Route } from "../../../types";
 import { showToast } from "../../../util/toast";
 import { configSections } from "../ha-panel-config";
-import "../../../components/ha-svg-icon";
-import { mdiPlus } from "@mdi/js";
 
 @customElement("ha-scene-dashboard")
 class HaSceneDashboard extends LitElement {
-  @property() public hass!: HomeAssistant;
+  @property({ attribute: false }) public hass!: HomeAssistant;
 
   @property() public narrow!: boolean;
 
@@ -44,6 +45,7 @@ class HaSceneDashboard extends LitElement {
       return {
         ...scene,
         name: computeStateName(scene),
+        icon: stateIcon(scene),
       };
     });
   });
@@ -65,6 +67,11 @@ class HaSceneDashboard extends LitElement {
                 @click=${(ev: Event) => this._activateScene(ev)}
               ></ha-icon-button>
             `,
+        },
+        icon: {
+          title: "",
+          type: "icon",
+          template: (icon) => html` <ha-icon .icon=${icon}></ha-icon> `,
         },
         name: {
           title: this.hass.localize(
@@ -110,7 +117,7 @@ class HaSceneDashboard extends LitElement {
             </a>
             ${!scene.attributes.id
               ? html`
-                  <paper-tooltip position="left">
+                  <paper-tooltip animation-delay="0" position="left">
                     ${this.hass.localize(
                       "ui.panel.config.scene.picker.only_editable"
                     )}
@@ -144,17 +151,16 @@ class HaSceneDashboard extends LitElement {
           icon="hass:help-circle"
           @click=${this._showHelp}
         ></ha-icon-button>
+        <a href="/config/scene/edit/new" slot="fab">
+          <mwc-fab
+            title=${this.hass.localize(
+              "ui.panel.config.scene.picker.add_scene"
+            )}
+          >
+            <ha-svg-icon slot="icon" path=${mdiPlus}></ha-svg-icon>
+          </mwc-fab>
+        </a>
       </hass-tabs-subpage-data-table>
-      <a href="/config/scene/edit/new">
-        <mwc-fab
-          ?is-wide=${this.isWide}
-          ?narrow=${this.narrow}
-          title=${this.hass.localize("ui.panel.config.scene.picker.add_scene")}
-          ?rtl=${computeRTL(this.hass)}
-        >
-          <ha-svg-icon slot="icon" path=${mdiPlus}></ha-svg-icon>
-        </mwc-fab>
-      </a>
     `;
   }
 
@@ -200,31 +206,6 @@ class HaSceneDashboard extends LitElement {
     return [
       haStyle,
       css`
-        mwc-fab {
-          position: fixed;
-          bottom: 16px;
-          right: 16px;
-          z-index: 1;
-        }
-
-        mwc-fab[is-wide] {
-          bottom: 24px;
-          right: 24px;
-        }
-        mwc-fab[narrow] {
-          bottom: 84px;
-        }
-        mwc-fab[rtl] {
-          right: auto;
-          left: 16px;
-        }
-
-        mwc-fab[rtl][is-wide] {
-          bottom: 24px;
-          right: auto;
-          left: 24px;
-        }
-
         a {
           color: var(--primary-color);
         }

@@ -1,4 +1,4 @@
-import "@polymer/app-layout/app-header-layout/app-header-layout";
+import "../../../layouts/ha-app-layout";
 import "@polymer/app-layout/app-header/app-header";
 import "@polymer/app-layout/app-toolbar/app-toolbar";
 import {
@@ -24,7 +24,7 @@ import { mdiCloudLock } from "@mdi/js";
 
 @customElement("ha-config-dashboard")
 class HaConfigDashboard extends LitElement {
-  @property() public hass!: HomeAssistant;
+  @property({ attribute: false }) public hass!: HomeAssistant;
 
   @property({ type: Boolean, reflect: true })
   public narrow!: boolean;
@@ -127,7 +127,7 @@ class HaConfigDashboard extends LitElement {
     }
 
     return html`
-      <app-header-layout>
+      <ha-app-layout>
         <app-header fixed slot="header">
           <app-toolbar>
             <ha-menu-button
@@ -138,7 +138,7 @@ class HaConfigDashboard extends LitElement {
         </app-header>
 
         ${content}
-      </app-header-layout>
+      </ha-app-layout>
     `;
   }
 

@@ -1,16 +1,19 @@
-import "@polymer/paper-item/paper-item";
+import { mdiPlus } from "@mdi/js";
+import "@polymer/paper-item/paper-icon-item";
 import "@polymer/paper-item/paper-item-body";
 import {
   css,
   CSSResult,
   html,
+  internalProperty,
   LitElement,
   property,
   TemplateResult,
 } from "lit-element";
 import { compare } from "../../../common/string/compare";
 import "../../../components/ha-card";
-import "@material/mwc-fab";
+import "../../../components/ha-svg-icon";
+import "../../../components/user/ha-person-badge";
 import {
   createPerson,
   deletePerson,
@@ -29,12 +32,9 @@ import {
   loadPersonDetailDialog,
   showPersonDetailDialog,
 } from "./show-dialog-person-detail";
-import "../../../components/ha-svg-icon";
-import { mdiPlus } from "@mdi/js";
-import { computeRTL } from "../../../common/util/compute_rtl";
 
 class HaConfigPerson extends LitElement {
-  @property() public hass?: HomeAssistant;
+  @property({ attribute: false }) public hass?: HomeAssistant;
 
   @property() public isWide?: boolean;
 
@@ -42,9 +42,9 @@ class HaConfigPerson extends LitElement {
 
   @property() public route!: Route;
 
-  @property() private _storageItems?: Person[];
+  @internalProperty() private _storageItems?: Person[];
 
-  @property() private _configItems?: Person[];
+  @internalProperty() private _configItems?: Person[];
 
   private _usersLoad?: Promise<User[]>;
 
@@ -84,11 +84,15 @@ class HaConfigPerson extends LitElement {
           <ha-card class="storage">
             ${this._storageItems.map((entry) => {
               return html`
-                <paper-item @click=${this._openEditEntry} .entry=${entry}>
+                <paper-icon-item @click=${this._openEditEntry} .entry=${entry}>
+                  <ha-person-badge
+                    slot="item-icon"
+                    .person=${entry}
+                  ></ha-person-badge>
                   <paper-item-body>
                     ${entry.name}
                   </paper-item-body>
-                </paper-item>
+                </paper-icon-item>
               `;
             })}
             ${this._storageItems.length === 0
@@ -111,28 +115,29 @@ class HaConfigPerson extends LitElement {
                 <ha-card header="Configuration.yaml persons">
                   ${this._configItems.map((entry) => {
                     return html`
-                      <paper-item>
+                      <paper-icon-item>
+                        <ha-person-badge
+                          slot="item-icon"
+                          .person=${entry}
+                        ></ha-person-badge>
                         <paper-item-body>
                           ${entry.name}
                         </paper-item-body>
-                      </paper-item>
+                      </paper-icon-item>
                     `;
                   })}
                 </ha-card>
               `
             : ""}
         </ha-config-section>
+        <mwc-fab
+          slot="fab"
+          title="${hass.localize("ui.panel.config.person.add_person")}"
+          @click=${this._createPerson}
+        >
+          <ha-svg-icon slot="icon" path=${mdiPlus}></ha-svg-icon>
+        </mwc-fab>
       </hass-tabs-subpage>
-
-      <mwc-fab
-        ?is-wide=${this.isWide}
-        ?narrow=${this.narrow}
-        ?rtl=${computeRTL(this.hass!)}
-        title="${hass.localize("ui.panel.config.person.add_person")}"
-        @click=${this._createPerson}
-      >
-        <ha-svg-icon slot="icon" path=${mdiPlus}></ha-svg-icon>
-      </mwc-fab>
     `;
   }
 
@@ -235,34 +240,12 @@ class HaConfigPerson extends LitElement {
         text-align: center;
         padding: 8px;
       }
-      paper-item {
+      paper-icon-item {
         padding-top: 4px;
         padding-bottom: 4px;
       }
-      ha-card.storage paper-item {
+      ha-card.storage paper-icon-item {
         cursor: pointer;
-      }
-      mwc-fab {
-        position: fixed;
-        bottom: 16px;
-        right: 16px;
-        z-index: 1;
-      }
-      mwc-fab[narrow] {
-        bottom: 84px;
-      }
-      mwc-fab[is-wide] {
-        bottom: 24px;
-        right: 24px;
-      }
-      mwc-fab[rtl] {
-        right: auto;
-        left: 16px;
-      }
-      mwc-fab[is-wide][rtl] {
-        bottom: 24px;
-        left: 24px;
-        right: auto;
       }
     `;
   }

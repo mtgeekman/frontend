@@ -6,6 +6,7 @@ import {
   html,
   LitElement,
   property,
+  internalProperty,
   PropertyValues,
   TemplateResult,
 } from "lit-element";
@@ -22,7 +23,7 @@ import "../ha-label-badge";
 
 @customElement("ha-state-label-badge")
 export class HaStateLabelBadge extends LitElement {
-  @property() public hass?: HomeAssistant;
+  @property({ attribute: false }) public hass?: HomeAssistant;
 
   @property() public state?: HassEntity;
 
@@ -32,7 +33,7 @@ export class HaStateLabelBadge extends LitElement {
 
   @property() public image?: string;
 
-  @property() private _timerTimeRemaining?: number;
+  @internalProperty() private _timerTimeRemaining?: number;
 
   private _connected?: boolean;
 
@@ -80,7 +81,7 @@ export class HaStateLabelBadge extends LitElement {
           ? ""
           : this.image
           ? this.image
-          : state.attributes.entity_picture}"
+          : state.attributes.entity_picture_local || state.attributes.entity_picture}"
         .label="${this._computeLabel(domain, state, this._timerTimeRemaining)}"
         .description="${this.name ? this.name : computeStateName(state)}"
       ></ha-label-badge>

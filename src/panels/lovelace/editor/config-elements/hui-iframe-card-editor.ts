@@ -4,32 +4,33 @@ import {
   html,
   LitElement,
   property,
+  internalProperty,
   TemplateResult,
 } from "lit-element";
 import { fireEvent } from "../../../../common/dom/fire_event";
 import { HomeAssistant } from "../../../../types";
 import { IframeCardConfig } from "../../cards/types";
-import { struct } from "../../common/structs/struct";
 import { LovelaceCardEditor } from "../../types";
 import { EditorTarget, EntitiesEditorEvent } from "../types";
 import { configElementStyle } from "./config-elements-style";
+import { string, assert, object, optional } from "superstruct";
 
-const cardConfigStruct = struct({
-  type: "string",
-  title: "string?",
-  url: "string?",
-  aspect_ratio: "string?",
+const cardConfigStruct = object({
+  type: string(),
+  title: optional(string()),
+  url: optional(string()),
+  aspect_ratio: optional(string()),
 });
 
 @customElement("hui-iframe-card-editor")
 export class HuiIframeCardEditor extends LitElement
   implements LovelaceCardEditor {
-  @property() public hass?: HomeAssistant;
+  @property({ attribute: false }) public hass?: HomeAssistant;
 
-  @property() private _config?: IframeCardConfig;
+  @internalProperty() private _config?: IframeCardConfig;
 
   public setConfig(config: IframeCardConfig): void {
-    config = cardConfigStruct(config);
+    assert(config, cardConfigStruct);
     this._config = config;
   }
 
@@ -101,6 +102,7 @@ export class HuiIframeCardEditor extends LitElement
     }
     if (target.configValue) {
       if (value === "") {
+        this._config = { ...this._config };
         delete this._config[target.configValue!];
       } else {
         this._config = { ...this._config, [target.configValue!]: value };

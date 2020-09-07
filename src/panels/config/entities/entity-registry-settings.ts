@@ -8,6 +8,7 @@ import {
   html,
   LitElement,
   property,
+  internalProperty,
   PropertyValues,
   TemplateResult,
 } from "lit-element";
@@ -29,21 +30,21 @@ import type { HomeAssistant } from "../../../types";
 
 @customElement("entity-registry-settings")
 export class EntityRegistrySettings extends LitElement {
-  @property() public hass!: HomeAssistant;
+  @property({ attribute: false }) public hass!: HomeAssistant;
 
   @property() public entry!: ExtEntityRegistryEntry;
 
-  @property() private _name!: string;
+  @internalProperty() private _name!: string;
 
-  @property() private _icon!: string;
+  @internalProperty() private _icon!: string;
 
-  @property() private _entityId!: string;
+  @internalProperty() private _entityId!: string;
 
-  @property() private _disabledBy!: string | null;
+  @internalProperty() private _disabledBy!: string | null;
 
-  @property() private _error?: string;
+  @internalProperty() private _error?: string;
 
-  @property() private _submitting?: boolean;
+  @internalProperty() private _submitting?: boolean;
 
   private _origEntityId!: string;
 
@@ -72,7 +73,7 @@ export class EntityRegistrySettings extends LitElement {
     return html`
       ${!stateObj
         ? html`
-            <div>
+            <div class="container">
               ${this.hass!.localize(
                 "ui.dialogs.entity_registry.editor.unavailable"
               )}
@@ -80,7 +81,7 @@ export class EntityRegistrySettings extends LitElement {
           `
         : ""}
       ${this._error ? html` <div class="error">${this._error}</div> ` : ""}
-      <div class="form">
+      <div class="form container">
         <paper-input
           .value=${this._name}
           @value-changed=${this._nameChanged}
@@ -225,19 +226,25 @@ export class EntityRegistrySettings extends LitElement {
       css`
         :host {
           display: block;
-          margin-bottom: 0 !important;
-          padding: 0 !important;
         }
-        .form {
+        .container {
           padding: 20px 24px;
         }
-        .buttons {
-          display: flex;
-          justify-content: flex-end;
-          padding: 8px;
+        .form {
+          margin-bottom: 53px;
         }
-        mwc-button.warning {
-          margin-right: auto;
+        .buttons {
+          position: absolute;
+          bottom: 0;
+          width: 100%;
+          box-sizing: border-box;
+          border-top: 1px solid
+            var(--mdc-dialog-scroll-divider-color, rgba(0, 0, 0, 0.12));
+          display: flex;
+          justify-content: space-between;
+          padding: 8px;
+          padding-bottom: max(env(safe-area-inset-bottom), 8px);
+          background-color: var(--mdc-theme-surface, #fff);
         }
         ha-switch {
           margin-right: 16px;

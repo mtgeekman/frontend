@@ -4,6 +4,7 @@ import {
   html,
   LitElement,
   property,
+  internalProperty,
   TemplateResult,
 } from "lit-element";
 import { fireEvent } from "../../../../common/dom/fire_event";
@@ -11,7 +12,6 @@ import { stateIcon } from "../../../../common/entity/state_icon";
 import "../../../../components/ha-icon-input";
 import { HomeAssistant } from "../../../../types";
 import { EntityCardConfig } from "../../cards/types";
-import { struct } from "../../common/structs/struct";
 import "../../components/hui-action-editor";
 import "../../components/hui-entity-editor";
 import "../../components/hui-theme-select-editor";
@@ -19,27 +19,28 @@ import { headerFooterConfigStructs } from "../../header-footer/types";
 import { LovelaceCardEditor } from "../../types";
 import { EditorTarget, EntitiesEditorEvent } from "../types";
 import { configElementStyle } from "./config-elements-style";
+import { string, object, optional, assert } from "superstruct";
 
-const cardConfigStruct = struct({
-  type: "string",
-  entity: "string?",
-  name: "string?",
-  icon: "string?",
-  attribute: "string?",
-  unit: "string?",
-  theme: "string?",
-  footer: struct.optional(headerFooterConfigStructs),
+const cardConfigStruct = object({
+  type: string(),
+  entity: optional(string()),
+  name: optional(string()),
+  icon: optional(string()),
+  attribute: optional(string()),
+  unit: optional(string()),
+  theme: optional(string()),
+  footer: optional(headerFooterConfigStructs),
 });
 
 @customElement("hui-entity-card-editor")
 export class HuiEntityCardEditor extends LitElement
   implements LovelaceCardEditor {
-  @property() public hass?: HomeAssistant;
+  @property({ attribute: false }) public hass?: HomeAssistant;
 
-  @property() private _config?: EntityCardConfig;
+  @internalProperty() private _config?: EntityCardConfig;
 
   public setConfig(config: EntityCardConfig): void {
-    config = cardConfigStruct(config);
+    assert(config, cardConfigStruct);
     this._config = config;
   }
 
@@ -157,6 +158,7 @@ export class HuiEntityCardEditor extends LitElement
     }
     if (target.configValue) {
       if (target.value === "") {
+        this._config = { ...this._config };
         delete this._config[target.configValue!];
       } else {
         let newValue: string | undefined;

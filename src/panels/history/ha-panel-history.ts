@@ -1,10 +1,16 @@
-import "@polymer/app-layout/app-header-layout/app-header-layout";
+import "../../layouts/ha-app-layout";
 import "@polymer/app-layout/app-header/app-header";
 import "@polymer/app-layout/app-toolbar/app-toolbar";
 import { computeRTL } from "../../common/util/compute_rtl";
 import "../../components/ha-menu-button";
 import "../../components/state-history-charts";
-import { LitElement, css, property, PropertyValues } from "lit-element";
+import {
+  LitElement,
+  css,
+  property,
+  internalProperty,
+  PropertyValues,
+} from "lit-element";
 import { html } from "lit-html";
 import { haStyle } from "../../resources/styles";
 import { HomeAssistant } from "../../types";
@@ -30,7 +36,7 @@ class HaPanelHistory extends LitElement {
 
   @property({ reflect: true, type: Boolean }) rtl = false;
 
-  @property() private _ranges?: DateRangePickerRanges;
+  @internalProperty() private _ranges?: DateRangePickerRanges;
 
   public constructor() {
     super();
@@ -50,7 +56,7 @@ class HaPanelHistory extends LitElement {
 
   protected render() {
     return html`
-      <app-header-layout>
+      <ha-app-layout>
         <app-header slot="header" fixed>
           <app-toolbar>
             <ha-menu-button
@@ -87,7 +93,7 @@ class HaPanelHistory extends LitElement {
                 </state-history-charts>
               `}
         </div>
-      </app-header-layout>
+      </ha-app-layout>
     `;
   }
 

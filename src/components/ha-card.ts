@@ -9,7 +9,7 @@ import {
 } from "lit-element";
 
 @customElement("ha-card")
-class HaCard extends LitElement {
+export class HaCard extends LitElement {
   @property() public header?: string;
 
   @property({ type: Boolean, reflect: true }) public outlined = false;
@@ -19,7 +19,7 @@ class HaCard extends LitElement {
       :host {
         background: var(
           --ha-card-background,
-          var(--paper-card-background-color, white)
+          var(--card-background-color, white)
         );
         border-radius: var(--ha-card-border-radius, 4px);
         box-shadow: var(
@@ -66,7 +66,7 @@ class HaCard extends LitElement {
       }
 
       :host ::slotted(.card-actions) {
-        border-top: 1px solid #e8e8e8;
+        border-top: 1px solid var(--divider-color, #e8e8e8);
         padding: 5px 16px;
       }
     `;

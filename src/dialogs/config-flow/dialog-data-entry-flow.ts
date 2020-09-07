@@ -1,21 +1,22 @@
 import "@material/mwc-button";
 import "@polymer/paper-dialog-scrollable/paper-dialog-scrollable";
-import "../../components/ha-icon-button";
-import "../../components/ha-circular-progress";
-import "@polymer/paper-tooltip/paper-tooltip";
 import type { UnsubscribeFunc } from "home-assistant-js-websocket";
 import {
   css,
   CSSResultArray,
   customElement,
   html,
+  internalProperty,
   LitElement,
-  property,
   PropertyValues,
   TemplateResult,
 } from "lit-element";
+import { fireEvent } from "../../common/dom/fire_event";
+import { computeRTL } from "../../common/util/compute_rtl";
+import "../../components/ha-circular-progress";
 import "../../components/ha-dialog";
 import "../../components/ha-form/ha-form";
+import "../../components/ha-icon-button";
 import "../../components/ha-markdown";
 import {
   AreaRegistryEntry,
@@ -35,8 +36,6 @@ import "./step-flow-external";
 import "./step-flow-form";
 import "./step-flow-loading";
 import "./step-flow-pick-handler";
-import { fireEvent } from "../../common/dom/fire_event";
-import { computeRTL } from "../../common/util/compute_rtl";
 
 let instance = 0;
 
@@ -54,23 +53,23 @@ declare global {
 class DataEntryFlowDialog extends LitElement {
   public hass!: HomeAssistant;
 
-  @property() private _params?: DataEntryFlowDialogParams;
+  @internalProperty() private _params?: DataEntryFlowDialogParams;
 
-  @property() private _loading = true;
+  @internalProperty() private _loading = true;
 
   private _instance = instance;
 
-  @property() private _step:
+  @internalProperty() private _step:
     | DataEntryFlowStep
     | undefined
     // Null means we need to pick a config flow
     | null;
 
-  @property() private _devices?: DeviceRegistryEntry[];
+  @internalProperty() private _devices?: DeviceRegistryEntry[];
 
-  @property() private _areas?: AreaRegistryEntry[];
+  @internalProperty() private _areas?: AreaRegistryEntry[];
 
-  @property() private _handlers?: string[];
+  @internalProperty() private _handlers?: string[];
 
   private _unsubAreas?: UnsubscribeFunc;
 

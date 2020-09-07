@@ -5,24 +5,26 @@ import "@polymer/paper-input/paper-input";
 import type { PaperInputElement } from "@polymer/paper-input/paper-input";
 import "@polymer/paper-item/paper-item";
 import "@polymer/paper-item/paper-item-body";
-import "../../../../src/components/ha-circular-progress";
 import {
   css,
   CSSResult,
   customElement,
   html,
+  internalProperty,
   LitElement,
   property,
   query,
   TemplateResult,
 } from "lit-element";
 import memoizeOne from "memoize-one";
+import "../../../../src/components/ha-circular-progress";
 import "../../../../src/components/ha-dialog";
 import "../../../../src/components/ha-svg-icon";
 import {
   fetchHassioAddonsInfo,
   HassioAddonRepository,
 } from "../../../../src/data/hassio/addon";
+import { extractApiErrorMessage } from "../../../../src/data/hassio/common";
 import { setSupervisorOption } from "../../../../src/data/hassio/supervisor";
 import { haStyle, haStyleDialog } from "../../../../src/resources/styles";
 import type { HomeAssistant } from "../../../../src/types";
@@ -39,11 +41,11 @@ class HassioRepositoriesDialog extends LitElement {
 
   @query("#repository_input") private _optionInput?: PaperInputElement;
 
-  @property() private _opened = false;
+  @internalProperty() private _opened = false;
 
-  @property() private _prosessing = false;
+  @internalProperty() private _prosessing = false;
 
-  @property() private _error?: string;
+  @internalProperty() private _error?: string;
 
   public async showDialog(_dialogParams: any): Promise<void> {
     this._dialogParams = _dialogParams;
@@ -189,7 +191,7 @@ class HassioRepositoriesDialog extends LitElement {
 
       input.value = "";
     } catch (err) {
-      this._error = err.message;
+      this._error = extractApiErrorMessage(err);
     }
     this._prosessing = false;
   }
@@ -221,7 +223,7 @@ class HassioRepositoriesDialog extends LitElement {
 
       await this._dialogParams!.loadData();
     } catch (err) {
-      this._error = err.message;
+      this._error = extractApiErrorMessage(err);
     }
   }
 }

@@ -4,6 +4,7 @@ import {
   html,
   LitElement,
   property,
+  internalProperty,
   TemplateResult,
 } from "lit-element";
 import { fireEvent } from "../../../../common/dom/fire_event";
@@ -12,7 +13,6 @@ import "../../../../components/ha-icon-input";
 import { ActionConfig } from "../../../../data/lovelace";
 import { HomeAssistant } from "../../../../types";
 import { ButtonCardConfig } from "../../cards/types";
-import { struct } from "../../common/structs/struct";
 import "../../components/hui-action-editor";
 import "../../components/hui-entity-editor";
 import "../../components/hui-theme-select-editor";
@@ -26,29 +26,31 @@ import "../../../../components/ha-switch";
 import "../../../../components/ha-formfield";
 import { configElementStyle } from "./config-elements-style";
 import { computeRTLDirection } from "../../../../common/util/compute_rtl";
+import { assert, object, string, optional, boolean } from "superstruct";
 
-const cardConfigStruct = struct({
-  type: "string",
-  entity: "string?",
-  name: "string?",
-  show_name: "boolean?",
-  icon: "string?",
-  show_icon: "boolean?",
-  icon_height: "string?",
-  tap_action: struct.optional(actionConfigStruct),
-  hold_action: struct.optional(actionConfigStruct),
-  theme: "string?",
+const cardConfigStruct = object({
+  type: string(),
+  entity: optional(string()),
+  name: optional(string()),
+  show_name: optional(boolean()),
+  icon: optional(string()),
+  show_icon: optional(boolean()),
+  icon_height: optional(string()),
+  tap_action: optional(actionConfigStruct),
+  hold_action: optional(actionConfigStruct),
+  theme: optional(string()),
+  show_state: optional(boolean()),
 });
 
 @customElement("hui-button-card-editor")
 export class HuiButtonCardEditor extends LitElement
   implements LovelaceCardEditor {
-  @property() public hass?: HomeAssistant;
+  @property({ attribute: false }) public hass?: HomeAssistant;
 
-  @property() private _config?: ButtonCardConfig;
+  @internalProperty() private _config?: ButtonCardConfig;
 
   public setConfig(config: ButtonCardConfig): void {
-    config = cardConfigStruct(config);
+    assert(config, cardConfigStruct);
     this._config = config;
   }
 
@@ -62,6 +64,10 @@ export class HuiButtonCardEditor extends LitElement
 
   get _show_name(): boolean {
     return this._config!.show_name || true;
+  }
+
+  get _show_state(): boolean {
+    return this._config!.show_state || false;
   }
 
   get _icon(): string {
@@ -153,9 +159,23 @@ export class HuiButtonCardEditor extends LitElement
               .dir=${dir}
             >
               <ha-switch
-                .checked="${this._config!.show_name !== false}"
+                .checked="${this._show_name !== false}"
                 .configValue="${"show_name"}"
                 @change="${this._valueChanged}"
+              ></ha-switch>
+            </ha-formfield>
+          </div>
+          <div>
+            <ha-formfield
+              .label=${this.hass.localize(
+                "ui.panel.lovelace.editor.card.generic.show_state"
+              )}
+              .dir=${dir}
+            >
+              <ha-switch
+                .checked=${this._show_state !== false}
+                .configValue=${"show_state"}
+                @change=${this._valueChanged}
               ></ha-switch>
             </ha-formfield>
           </div>
@@ -167,7 +187,7 @@ export class HuiButtonCardEditor extends LitElement
               .dir=${dir}
             >
               <ha-switch
-                .checked="${this._config!.show_icon !== false}"
+                .checked="${this._show_icon !== false}"
                 .configValue="${"show_icon"}"
                 @change="${this._valueChanged}"
               ></ha-switch>
@@ -238,6 +258,7 @@ export class HuiButtonCardEditor extends LitElement
     }
     if (target.configValue) {
       if (target.value === "") {
+        this._config = { ...this._config };
         delete this._config[target.configValue!];
       } else {
         let newValue: string | undefined;

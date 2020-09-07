@@ -5,15 +5,15 @@ import type { AppDrawerElement } from "@polymer/app-layout/app-drawer/app-drawer
 import {
   css,
   CSSResult,
+  customElement,
   html,
   LitElement,
   property,
-  customElement,
   PropertyValues,
   TemplateResult,
 } from "lit-element";
-import { listenMediaQuery } from "../common/dom/media_query";
 import { fireEvent } from "../common/dom/fire_event";
+import { listenMediaQuery } from "../common/dom/media_query";
 import { toggleAttribute } from "../common/dom/toggle_attribute";
 import { showNotificationDrawer } from "../dialogs/notifications/show-notification-drawer";
 import type { HomeAssistant, Route } from "../types";
@@ -31,7 +31,7 @@ declare global {
 
 @customElement("home-assistant-main")
 class HomeAssistantMain extends LitElement {
-  @property() public hass!: HomeAssistant;
+  @property({ attribute: false }) public hass!: HomeAssistant;
 
   @property() public route?: Route;
 
@@ -49,7 +49,15 @@ class HomeAssistantMain extends LitElement {
     const disableSwipe =
       !sidebarNarrow || NON_SWIPABLE_PANELS.indexOf(hass.panelUrl) !== -1;
 
+    // Style block in render because of the mixin that is not supported
     return html`
+      <style>
+        app-drawer {
+          --app-drawer-content-container: {
+            background-color: var(--primary-background-color, #fff);
+          }
+        }
+      </style>
       <app-drawer-layout
         fullbleed
         .forceNarrow=${sidebarNarrow}
@@ -152,15 +160,12 @@ class HomeAssistantMain extends LitElement {
         --app-drawer-width: 64px;
       }
       :host([expanded]) {
-        --app-drawer-width: 256px;
+        --app-drawer-width: calc(256px + env(safe-area-inset-left));
       }
       partial-panel-resolver,
       ha-sidebar {
         /* allow a light tap highlight on the actual interface elements  */
         -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
-      }
-      partial-panel-resolver {
-        height: 100%;
       }
     `;
   }

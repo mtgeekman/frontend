@@ -6,6 +6,7 @@ import {
   html,
   LitElement,
   property,
+  internalProperty,
   TemplateResult,
 } from "lit-element";
 import { createCloseHeading } from "../../../../components/ha-dialog";
@@ -28,23 +29,24 @@ import { computeRTLDirection } from "../../../../common/util/compute_rtl";
 
 @customElement("dialog-lovelace-dashboard-detail")
 export class DialogLovelaceDashboardDetail extends LitElement {
-  @property() public hass!: HomeAssistant;
+  @property({ attribute: false }) public hass!: HomeAssistant;
 
-  @property() private _params?: LovelaceDashboardDetailsDialogParams;
+  @internalProperty() private _params?: LovelaceDashboardDetailsDialogParams;
 
-  @property() private _urlPath!: LovelaceDashboard["url_path"];
+  @internalProperty() private _urlPath!: LovelaceDashboard["url_path"];
 
-  @property() private _showInSidebar!: boolean;
+  @internalProperty() private _showInSidebar!: boolean;
 
-  @property() private _icon!: string;
+  @internalProperty() private _icon!: string;
 
-  @property() private _title!: string;
+  @internalProperty() private _title!: string;
 
-  @property() private _requireAdmin!: LovelaceDashboard["require_admin"];
+  @internalProperty()
+  private _requireAdmin!: LovelaceDashboard["require_admin"];
 
-  @property() private _error?: string;
+  @internalProperty() private _error?: string;
 
-  @property() private _submitting = false;
+  @internalProperty() private _submitting = false;
 
   public async showDialog(
     params: LovelaceDashboardDetailsDialogParams
@@ -251,7 +253,7 @@ export class DialogLovelaceDashboardDetail extends LitElement {
       return;
     }
 
-    const slugifyTitle = slugify(this._title);
+    const slugifyTitle = slugify(this._title, "-");
     this._urlPath = slugifyTitle.includes("-")
       ? slugifyTitle
       : `lovelace-${slugifyTitle}`;

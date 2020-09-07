@@ -9,12 +9,11 @@ import {
   html,
   LitElement,
   property,
+  internalProperty,
   PropertyValues,
   TemplateResult,
 } from "lit-element";
-import { classMap } from "lit-html/directives/class-map";
 import { navigate } from "../../../common/navigate";
-import { computeRTL } from "../../../common/util/compute_rtl";
 import "../../../components/ha-card";
 import "../../../components/ha-svg-icon";
 import "@material/mwc-fab";
@@ -45,12 +44,20 @@ import "./trigger/ha-automation-trigger";
 import { HaDeviceTrigger } from "./trigger/types/ha-automation-trigger-device";
 import { mdiContentSave } from "@mdi/js";
 import { PaperListboxElement } from "@polymer/paper-listbox";
+import { classMap } from "lit-html/directives/class-map";
 
-const MODES = ["parallel", "single", "restart", "queued"];
+const MODES = ["single", "restart", "queued", "parallel"];
 const MODES_MAX = ["queued", "parallel"];
 
+declare global {
+  // for fire event
+  interface HASSDomEvents {
+    "ui-mode-not-available": Error;
+  }
+}
+
 export class HaAutomationEditor extends LitElement {
-  @property() public hass!: HomeAssistant;
+  @property({ attribute: false }) public hass!: HomeAssistant;
 
   @property() public automationId!: string;
 
@@ -62,13 +69,13 @@ export class HaAutomationEditor extends LitElement {
 
   @property() public route!: Route;
 
-  @property() private _config?: AutomationConfig;
+  @internalProperty() private _config?: AutomationConfig;
 
-  @property() private _dirty?: boolean;
+  @internalProperty() private _dirty = false;
 
-  @property() private _errors?: string;
+  @internalProperty() private _errors?: string;
 
-  @property() private _entityId?: string;
+  @internalProperty() private _entityId?: string;
 
   protected render(): TemplateResult {
     const stateObj = this._entityId
@@ -139,7 +146,7 @@ export class HaAutomationEditor extends LitElement {
                           "ui.panel.config.automation.editor.modes.description",
                           "documentation_link",
                           html`<a
-                            href="https://www.home-assistant.io/docs/automation/#automation-modes"
+                            href="https://www.home-assistant.io/integrations/automation/#automation-modes"
                             target="_blank"
                             rel="noreferrer"
                             >${this.hass.localize(
@@ -304,16 +311,10 @@ export class HaAutomationEditor extends LitElement {
             `
           : ""}
         <mwc-fab
-          ?is-wide="${this.isWide}"
-          ?narrow="${this.narrow}"
-          ?dirty="${this._dirty}"
-          .title="${this.hass.localize(
-            "ui.panel.config.automation.editor.save"
-          )}"
+          slot="fab"
+          class=${classMap({ dirty: this._dirty })}
+          .title=${this.hass.localize("ui.panel.config.automation.editor.save")}
           @click=${this._saveAutomation}
-          class="${classMap({
-            rtl: computeRTL(this.hass),
-          })}"
         >
           <ha-svg-icon slot="icon" path=${mdiContentSave}></ha-svg-icon>
         </mwc-fab>
@@ -402,6 +403,10 @@ export class HaAutomationEditor extends LitElement {
   private _modeChanged(ev: CustomEvent) {
     const mode = ((ev.target as PaperListboxElement)?.selectedItem as any)
       ?.mode;
+
+    if (mode === this._config!.mode) {
+      return;
+    }
 
     this._config = { ...this._config!, mode };
     if (!MODES_MAX.includes(mode)) {
@@ -530,35 +535,12 @@ export class HaAutomationEditor extends LitElement {
           margin-right: 8px;
         }
         mwc-fab {
-          position: fixed;
-          bottom: 16px;
-          right: 16px;
-          z-index: 1;
-          margin-bottom: -80px;
-          transition: margin-bottom 0.3s;
+          position: relative;
+          bottom: calc(-80px - env(safe-area-inset-bottom));
+          transition: bottom 0.3s;
         }
-
-        mwc-fab[is-wide] {
-          bottom: 24px;
-          right: 24px;
-        }
-        mwc-fab[narrow] {
-          bottom: 84px;
-          margin-bottom: -140px;
-        }
-        mwc-fab[dirty] {
-          margin-bottom: 0;
-        }
-
-        mwc-fab.rtl {
-          right: auto;
-          left: 16px;
-        }
-
-        mwc-fab[is-wide].rtl {
-          bottom: 24px;
-          right: auto;
-          left: 24px;
+        mwc-fab.dirty {
+          bottom: 0;
         }
       `,
     ];
